@@ -10,10 +10,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class ManyToManyRelationshipWithExtraColumnsService {
-    // modeled as two one to many relationships so same advices apply
-    // it can also be modeled as one one to many relationship for efficiency
+    // modeled as two bidirectional one to many relationships so same advices apply
+    // here we actually synchronize both sides of two relationships
+    // for efficiency we can map only one side as bidirectional one to many relationship
     // specify join table entity
     // specify composite primary key
 

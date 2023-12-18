@@ -10,17 +10,15 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class ManyToManyRelationshipService {
     // use set instead of list
     // choose relationship owner
     // cascade only from owner side
     // do NOT cascade deletes
     // specify join table
-    // specify lazy fetching on both sides
+    // use lazy fetching on both sides (this is default setting)
     // keep both sides in sync
     // equals, hash code, to string overriding
-    // specify join column
 
     private final PostRepository postRepository;
     private final TagRepository tagRepository;
@@ -53,7 +51,6 @@ public class ManyToManyRelationshipService {
         postRepository.save(post2);
     }
 
-    // TODO Optimize fetching
     @Transactional
     public void removeTagFromFirstPost() {
         Post post = postRepository.findById(POST_ID)

@@ -21,7 +21,7 @@ import lombok.ToString.Exclude;
 @ToString
 public class Organization {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
     private String name;
@@ -53,7 +53,15 @@ public class Organization {
         }
     }
 
-    // Best way to override equals if there is no unique business key (equals is not used for dirty checking)
+    // Things to note for overriding equals and hashcode methods:
+    //  entity must be equal to itself across all state transitions (transient, managed, detached, removed)
+    //  dirty checking does not use equals and hashcode methods
+    //  equals and hashcode methods have to be overridden when:
+    //      entities are stored in sets
+    //      entities are reattached to new persistence context
+    //      synchronizing both sides of relationships via helper methods
+
+    // Best way to override equals if there is no unique business key
     @Override
     public boolean equals(Object obj) {
         if(obj == null) {

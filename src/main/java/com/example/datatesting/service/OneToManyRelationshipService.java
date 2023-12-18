@@ -5,12 +5,13 @@ import com.example.datatesting.entity.Person;
 import com.example.datatesting.repository.OrganizationRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true) // It is suggested to set readOnly on class level transactional annotation and override it on method level if needed
+@Slf4j
 public class OneToManyRelationshipService {
     // use bidirectional one to many (unidirectional is less efficient)
     // cascade only from parent to child
@@ -53,6 +54,14 @@ public class OneToManyRelationshipService {
         person.setName(PERSON_3_NAME);
 
         organization.addPerson(person);
+    }
+
+    @Transactional(readOnly = true)
+    public void findWithPeople() {
+        Organization organization = organizationRepository.findByNameWithPeople(ORGANIZATION_NAME)
+            .orElseThrow(() -> new RuntimeException("Demonstration error"));
+
+        log.info("Organization: {} with {} people", organization, organization.getPeople().size());
     }
 
     @Transactional

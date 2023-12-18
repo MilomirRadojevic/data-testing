@@ -5,7 +5,9 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.util.Optional;
 import org.hibernate.Session;
+import org.springframework.transaction.annotation.Transactional;
 
+@Transactional(readOnly = true)
 public class CustomOrganizationRepositoryImpl implements CustomOrganizationRepository {
     @PersistenceContext
     private EntityManager entityManager;

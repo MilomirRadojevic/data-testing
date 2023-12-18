@@ -10,7 +10,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class OneToOneRelationshipService {
     // use maps id annotation for best performance
     // use unidirectional or bidirectional as long previous point is respected (here we use unidirectional)
@@ -37,6 +36,7 @@ public class OneToOneRelationshipService {
         linkedinProfileRepository.save(linkedinProfile);
     }
 
+    @Transactional(readOnly = true)
     public void findLinkedinProfileByDeveloper() {
         LinkedinProfile linkedinProfile = linkedinProfileRepository.findById(DEVELOPER_ID)
             .orElseThrow(() -> new RuntimeException("Demonstration error"));

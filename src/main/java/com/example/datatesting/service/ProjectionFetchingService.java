@@ -17,13 +17,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
 import java.util.List;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@Transactional(readOnly = true)
 @Slf4j
 public class ProjectionFetchingService extends PersistenceContextInspectingService {
     private final OrganizationRepository organizationRepository;
@@ -43,7 +41,7 @@ public class ProjectionFetchingService extends PersistenceContextInspectingServi
 
     @Transactional
     public void addOrganizationsAndPeople() {
-        // There is a lot more way to use projection fetching, and hopefully, I will add examples soon
+        // There is a lot more ways to use projection fetching, and hopefully, I will add examples soon
 
         Organization o1 = new Organization();
         o1.setName("org 1 name");
@@ -76,6 +74,7 @@ public class ProjectionFetchingService extends PersistenceContextInspectingServi
         organizationRepository.save(o3);
     }
 
+    @Transactional(readOnly = true)
     public void findAllByMotto() {
         // We can fetch the same projection using generated method and both explicit jpql and native query
         List<OrganizationInterfaceBasedProjection> organizations = organizationRepository.findAllByMotto(GOOD_MOTTO);
@@ -93,6 +92,7 @@ public class ProjectionFetchingService extends PersistenceContextInspectingServi
         );
     }
 
+    @Transactional(readOnly = true)
     public void findDynamicProjectionsByMotto() throws JsonProcessingException {
         // dynamic projection (same method used for fetching different projections or even the entity itself)
         briefOverviewOfPersistentContextContent();
@@ -116,41 +116,50 @@ public class ProjectionFetchingService extends PersistenceContextInspectingServi
         briefOverviewOfPersistentContextContent();
     }
 
-    // TODO Check performance
-    public void projectionIncludingManyToOneRelationship() throws JsonProcessingException {
-        // projections which include fields from *-to-one relationships
-        briefOverviewOfPersistentContextContent();
-
+    // projections which include fields from *-to-one relationships
+    @Transactional(readOnly = true)
+    public void projectionIncludingManyToOneRelationshipNestedClosedProjection() throws JsonProcessingException {
         // not very performant
         List<PersonDtoNestedClosedProjection> peopleUsingNestedClosedProjection = personRepository.findAllUsingNestedClosedProjection();
         log.info("PersonDtoNestedClosedProjection:\n {}", new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(peopleUsingNestedClosedProjection));
         briefOverviewOfPersistentContextContent();
+    }
 
+    @Transactional(readOnly = true)
+    public void projectionIncludingManyToOneRelationshipSimpleClosedProjection() throws JsonProcessingException {
         // better performance but worse representation
         List<PersonDtoSimpleClosedProjection> peopleUsingSimpleClosedProjection = personRepository.findAllUsingSimpleClosedProjection();
         log.info("PersonDtoSimpleClosedProjection:\n {}", new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(peopleUsingSimpleClosedProjection));
         briefOverviewOfPersistentContextContent();
+    }
 
+    @Transactional(readOnly = true)
+    public void projectionIncludingManyToOneRelationshipSimpleOpenProjection() throws JsonProcessingException {
         // better representation but extra mapper needed
         List<PersonDtoSimpleOpenProjection> peopleUsingSimpleOpenProjection = personRepository.findAllUsingSimpleOpenProjection();
         log.info("PersonDtoSimpleOpenProjection:\n {}", new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(peopleUsingSimpleOpenProjection));
         briefOverviewOfPersistentContextContent();
     }
 
-    public void projectionIncludingOneToManyRelationship() throws JsonProcessingException {
-        // projections which include fields from *-to-many relationships
-        briefOverviewOfPersistentContextContent();
-
-        // not very performant, bad representation
+    // projections which include fields from *-to-many relationships
+    @Transactional(readOnly = true)
+    public void projectionIncludingOneToManyRelationshipNestedClosedProjection() throws JsonProcessingException {
+        // bad performance, bad representation
         List<OrganizationDtoNestedClosedProjection> organizationDtoNestedClosedProjections = organizationRepository.findAllUsingNestedClosedProjection();
         log.info("OrganizationDtoNestedClosedProjection:\n {}", new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(organizationDtoNestedClosedProjections));
         briefOverviewOfPersistentContextContent();
+    }
 
+    @Transactional(readOnly = true)
+    public void projectionIncludingOneToManyRelationshipSimpleClosedProjection() throws JsonProcessingException {
         // better performance but worse representation
         List<OrganizationDtoSimpleClosedProjection> organizationDtoSimpleClosedProjections = organizationRepository.findAllUsingSimpleClosedProjection();
         log.info("OrganizationDtoSimpleClosedProjection:\n {}", new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(organizationDtoSimpleClosedProjections));
         briefOverviewOfPersistentContextContent();
+    }
 
+    @Transactional(readOnly = true)
+    public void projectionIncludingOneToManyRelationshipCustomTransformation() throws JsonProcessingException {
         // better representation but extra transformer needed
         List<Object[]> allUsingCustomTransformation = organizationRepository.findAllUsingCustomTransformation();
         List<OrganizationDtoCustomTransformation> organizationDtoCustomTransformations = organizationTransformer.transform(allUsingCustomTransformation);

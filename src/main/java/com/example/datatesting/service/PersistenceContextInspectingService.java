@@ -12,7 +12,6 @@ import org.hibernate.engine.spi.SharedSessionContractImplementor;
 
 @RequiredArgsConstructor
 @Slf4j
-// TODO Revisit this
 public abstract class PersistenceContextInspectingService {
     @PersistenceContext
     protected final EntityManager entityManager;
@@ -38,21 +37,20 @@ public abstract class PersistenceContextInspectingService {
             log.info("\nEntities by key:");
             entitiesByKey.forEach((key, value) -> System.out.println(key + ": " + value));
 
-            // This is causing additional selects, so it is wrong to call it
-//            log.info("\nStatus and hydrated state:");
-//            for (Object entry : entitiesByKey.values()) {
-//                EntityEntry ee = persistenceContext.getEntry(entry);
-//                log.info(
-//                    "Entity name: " + ee.getEntityName()
-//                        + " | Status: " + ee.getStatus()
-//                        + " | State: " + Arrays.toString(ee.getLoadedState()));
-//            }
-//        }
-//        if (collectionEntriesSize > 0) {
-//            log.info("\nCollection entries:");
-//            persistenceContext.forEachCollectionEntry(
-//                (k, v) -> log.info("Key:" + k + ", Value:" + (v.getRole() == null ? "" : v)), false
-//            );
+            log.info("\nStatus and hydrated state:");
+            for (Object entry : entitiesByKey.values()) {
+                EntityEntry ee = persistenceContext.getEntry(entry);
+                log.info(
+                    "Entity name: " + ee.getEntityName()
+                        + " | Status: " + ee.getStatus()
+                        + " | State: " + Arrays.toString(ee.getLoadedState()));
+            }
+        }
+        if (collectionEntriesSize > 0) {
+            log.info("\nCollection entries:");
+            persistenceContext.forEachCollectionEntry(
+                (k, v) -> log.info("Key:" + k + ", Value:" + (v.getRole() == null ? "" : v)), false
+            );
         }
     }
 }

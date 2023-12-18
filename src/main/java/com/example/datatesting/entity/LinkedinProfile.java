@@ -11,6 +11,7 @@ import jakarta.persistence.OneToOne;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import lombok.ToString.Exclude;
 
 @Entity
 @Getter
@@ -18,17 +19,18 @@ import lombok.ToString;
 @ToString
 public class LinkedinProfile {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
     private String name;
 
     // Efficient unidirectional one to one mapping as:
-    //  we can fetch child by parent id (we need additional query in regular unidirectional mapping)
+    //  we can fetch child by parent id (we would need additional query in regular unidirectional mapping)
     //  and we can have lazy fetching (can't have it in regular bidirectional mapping)
     @MapsId
     @OneToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "developer_id")
+    @Exclude
     private Developer developer;
 
     @Override

@@ -1,10 +1,8 @@
 package com.example.datatesting.repository;
 
-import com.example.datatesting.dto.OrganizationDtoCustomTransformation;
 import com.example.datatesting.dto.OrganizationDtoNestedClosedProjection;
 import com.example.datatesting.dto.OrganizationDtoSimpleClosedProjection;
 import com.example.datatesting.dto.OrganizationInterfaceBasedProjection;
-import com.example.datatesting.dto.PersonDtoSimpleClosedProjection;
 import com.example.datatesting.entity.Organization;
 import java.util.List;
 import java.util.Optional;
@@ -14,9 +12,12 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 @Repository
-@Transactional(readOnly = true)
+@Transactional(readOnly = true) // It is suggested to set readOnly on class level transactional annotation and override it on method level if needed
 public interface OrganizationRepository extends JpaRepository<Organization, Long>, CustomOrganizationRepository {
     Optional<Organization> findByName(String name);
+
+    @Query("select o from Organization o join fetch o.people where o.name = :name")
+    Optional<Organization> findByNameWithPeople(String name);
 
     @Query("select o from Organization o where o.id = :id")
     Optional<Organization> findByIdViaExplicitJPQL(Long id);

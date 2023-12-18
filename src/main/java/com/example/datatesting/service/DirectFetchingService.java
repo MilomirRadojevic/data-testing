@@ -2,6 +2,7 @@ package com.example.datatesting.service;
 
 import com.example.datatesting.entity.Organization;
 import com.example.datatesting.repository.OrganizationRepository;
+import jakarta.persistence.EntityManager;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,10 +11,8 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@RequiredArgsConstructor
-@Transactional(readOnly = true)
 @Slf4j
-public class DirectFetchingService {
+public class DirectFetchingService extends PersistenceContextInspectingService {
     // Essentially, we want to show session level repeatable read functionality provided by hibernate
     //  and to see how it behaves with direct fetching, fetching by explicit queries nad fetching projections
 
@@ -23,6 +22,11 @@ public class DirectFetchingService {
     private static final String ORGANIZATION_OLD_NAME = "org old name";
     private static final String ORGANIZATION_NEW_NAME = "org new name";
     private static final List<Long> MULTIPLE_ORGANIZATION_IDS = List.of(2L, 3L);
+
+    public DirectFetchingService(EntityManager entityManager, OrganizationRepository organizationRepository) {
+        super(entityManager);
+        this.organizationRepository = organizationRepository;
+    }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void addOrganizations() {
@@ -40,6 +44,7 @@ public class DirectFetchingService {
         organizationRepository.save(o3);
     }
 
+    @Transactional(readOnly = true)
     public void fetchById() {
         Organization organization = organizationRepository.findById(ORGANIZATION_ID)
             .orElseThrow(() -> new RuntimeException("Demonstration error"));
@@ -53,6 +58,7 @@ public class DirectFetchingService {
         organization.setName(ORGANIZATION_NEW_NAME);
     }
 
+    @Transactional(readOnly = true)
     public void fetchWithSessionLevelRepeatableRead() {
         // Direct methods fetch until the entity is found in the following order: from current context, from second level cache, from database
         Organization organizationViaSpringData = organizationRepository.findById(ORGANIZATION_ID)
@@ -86,6 +92,7 @@ public class DirectFetchingService {
         log.info("Organization: name: {}", organizationNameViaExplicitNativeQuery);
     }
 
+    @Transactional(readOnly = true)
     public void fetchMultipleByIds() {
         // These two will fetch in the following order: second level cache, database (but will ignore the result if the entity is present in current context)
         List<Organization> organizationsViaSpringData = organizationRepository.findAllById(MULTIPLE_ORGANIZATION_IDS);
@@ -95,17 +102,21 @@ public class DirectFetchingService {
         log.info("Organizations: {}", organizationsViaExplicitJPQL);
     }
 
-    // TODO Revisit this
-//    @Transactional
-//    public void fetchByNameReadWrite() {
-//        Organization organization = organizationRepository.findByName(ORGANIZATION_NEW_NAME)
-//            .orElseThrow(() -> new RuntimeException("Demonstration error"));
-//        log.info("Organization: {}", organization);
-//    }
-//
-//    public void fetchByNameReadOnly() {
-//        Organization organization = organizationRepository.findByName(ORGANIZATION_NEW_NAME)
-//            .orElseThrow(() -> new RuntimeException("Demonstration error"));
-//        log.info("Organization: {}", organization);
-//    }
+    @Transactional
+    public void fetchByNameReadWrite() {
+        briefOverviewOfPersistentContextContent();
+        Organization organization = organizationRepository.findByName(ORGANIZATION_OLD_NAME)
+            .orElseThrow(() -> new RuntimeException("Demonstration error"));
+        log.info("Organization: {}", organization);
+        briefOverviewOfPersistentContextContent();
+    }
+
+    @Transactional(readOnly = true)
+    public void fetchByNameReadOnly() {
+        briefOverviewOfPersistentContextContent();
+        Organization organization = organizationRepository.findByName(ORGANIZATION_OLD_NAME)
+            .orElseThrow(() -> new RuntimeException("Demonstration error"));
+        log.info("Organization: {}", organization);
+        briefOverviewOfPersistentContextContent();
+    }
 }
